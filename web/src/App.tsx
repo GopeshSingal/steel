@@ -1,34 +1,121 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [status, setStatus] = useState<string>("not connected yet")
+    const [password, setPassword] = useState('')
+    const [login, setLogin] = useState('Not logged in')
+    const [user, setUser] = useState('User')
+
+    const handleLogin = async () => {
+        setLogin('Logging in...')
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    password: password
+                }),
+            })
+
+            if (response.ok) {
+                setLogin('Successfully logged in.')
+            } else {
+                setLogin(`Failed to login. Returned status: ${response.status}`)
+            }
+        } catch (error) {
+            console.error(error)
+            setLogin('Network error: Could not reach Go server')
+        }
+    }
+
+    const handleLogout = async () => {
+        try {
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+
+            if (response.ok) {
+                setLogin('Successfully logged out.')
+            } else {
+                setLogin(`Failed to logout. Returned status: ${response.status}`)
+            }
+        } catch (error) {
+            console.error(error)
+            setLogin('Network error: Could not reach Go server')
+        }
+    }
+
+    const handleHealth = () => {
+        fetch('/healthz')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Server responded with an error');
+            }
+            return res.text();
+        })
+        .then(text => {
+            setStatus(`Server is ${text}`);
+        })
+        .catch(err => {
+            console.error("Connection failed:", err);
+            setStatus('Server is offline');
+      })
+    };
+
+    const handleUser = () => {
+        fetch('/api/me')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Server responded with an error');
+            }
+            return res.text();
+        })
+        .then(text => {
+            setUser(`User ${text}`);
+        })
+        .catch(err => {
+            console.error("Connection failed:", err);
+            setUser('Failed to get user');
+      })
+    };
 
   return (
     <>
-      <div>
-        <h1> Frontend TEST </h1>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+      <h2> Health check </h2>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <button onClick={handleHealth}>
+          Click for health api endpoint status: {status}
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
+      <h1> Login status: {login} </h1>
+      <h2> {user} </h2>
+      <button onClick={handleUser}>
+        Click to get user
+      </button>
+
+      <h2> Login check </h2>
+      <input
+        type="password"
+        placeholder="Enter password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button onClick={handleLogin}>
+        Log in
+      </button>
+
+      <h2> Logout check </h2>
+      <button onClick={handleLogout}>
+        Log out
+      </button>
     </>
   )
 }

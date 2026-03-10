@@ -1,2 +1,2 @@
 dev:
-	(go run main.go) & (cd frontend && npm run dev)
+	(cd backend && go run ./cmd/server) & (cd web && npm run dev)

@@ -1,3 +1,4 @@
 *.DS_Store
 backend/go.sum
 backend/data/
+web/node_modules
