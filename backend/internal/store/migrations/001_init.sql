@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS tracks (
   title TEXT NOT NULL,
   track_no INTEGER,
   disc_no INTEGER,
-  duration_sec INTEGER,
   path TEXT NOT NULL UNIQUE,
   mtime_unix INTEGER NOT NULL,
   size_bytes INTEGER NOT NULL,
