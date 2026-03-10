@@ -33,13 +33,16 @@ func ParseMeta(path string) (TrackMeta, os.FileInfo, error) {
 		return TrackMeta{}, fi, nil
 	}
 
+	track, _ := m.Track()
+	disc, _ := m.Disc()
+
 	meta := TrackMeta{
 		Title: m.Title(),
 		Artist: m.Artist(),
 		Album: m.Album(),
 		Year: m.Year(),
-		TrackNo: m.Track(),
-		DiscNo: m.Disc(),
+		TrackNo: track,
+		DiscNo: disc,
 	}
 	return meta, fi, nil
 }
