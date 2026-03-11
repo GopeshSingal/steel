@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: steel-backend
+    ports:
+      - "8080:8080"
+    environment:
+      STEEL_HTTP_ADDR: ":8080"
+      STEEL_MUSIC_DIR: "/music"
+      STEEL_DATA_DIR: "/data"
+      STEEL_DB_PATH: "/data/steel.db"
+      STEEL_ADMIN_PASSWORD: "123456"
+      STEEL_SESSION_AUTH_KEY: "dev-secret-key"
+    volumes:
+      - ./backend:/app/backend
+      - ./music:/music
+      - backend-data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    container_name: steel-web
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./web:/app/web
+      - web-node-modules:/app/web/node_modules
+
+volumes:
+  backend-data:
+  web-node-modules:
+

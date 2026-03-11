@@ -7,8 +7,8 @@ export default defineConfig({
     server: {
         proxy: {
             // Send api request to Go server
-            '/healthz': 'http://localhost:8080',
-            '/api': 'http://localhost:8080'
+            '/healthz': 'http://backend:8080',
+            '/api': 'http://backend:8080'
         }
     }
 })

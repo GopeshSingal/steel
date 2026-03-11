@@ -1,2 +1,2 @@
-dev:
-	(cd backend && go run ./cmd/server) & (cd web && npm run dev)
+docker-build:
+	docker compose up --build
