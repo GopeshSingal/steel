@@ -6,6 +6,8 @@ function App() {
     const [password, setPassword] = useState('')
     const [login, setLogin] = useState('Not logged in')
     const [user, setUser] = useState('User')
+    const [artists, setArtists] = useState<{ id: number; name: string}[]>([])
+    const [artistsError, setArtistsError] = useState<string | null>(null)
 
     const handleLogin = async () => {
         setLogin('Logging in...')
@@ -86,6 +88,22 @@ function App() {
       })
     };
 
+    const handleLoadArtists = async () => {
+        try {
+            const resp = await fetch('/api/artists', { credentials: 'include' })
+            if (!resp.ok) {
+                setArtistsError(`Failed: ${resp.status}`)
+                return
+            }
+            const data = await resp.json() as { artists: { id: number, name: string }[] }
+            setArtists(data.artists)
+        } catch (err) {
+            console.error(err)
+            setArtistsError('Network error')
+        }
+    }
+
+
   return (
     <>
       <h2> Health check </h2>
@@ -116,6 +134,17 @@ function App() {
       <button onClick={handleLogout}>
         Log out
       </button>
+
+      <h2> Artists </h2>
+      <button onClick={handleLoadArtists}>
+        Click to list available artists
+      </button>
+      {artistsError && <p style={{ color: 'red' }}>{artistsError}</p>}
+      <ul>
+        {artists.map((artist) => (
+          <li key={artist.id}>{artist.name}</li>
+        ))}
+      </ul>
     </>
   )
 }
