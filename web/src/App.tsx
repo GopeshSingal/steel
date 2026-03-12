@@ -8,6 +8,9 @@ function App() {
     const [user, setUser] = useState('User')
     const [artists, setArtists] = useState<{ id: number; name: string}[]>([])
     const [artistsError, setArtistsError] = useState<string | null>(null)
+    const [albums, setAlbums] = useState<{ id: number; title: string; year: number }[]>([])
+    const [albumsError, setAlbumsError] = useState<string | null>(null)
+    const [selectedArtistId, setSelectedArtistId] = useState<number | null>(null)
 
     const handleLogin = async () => {
         setLogin('Logging in...')
@@ -42,7 +45,6 @@ function App() {
                     'Content-Type': 'application/json',
                 },
             })
-
             if (response.ok) {
                 setLogin('Successfully logged out.')
             } else {
@@ -103,6 +105,20 @@ function App() {
         }
     }
 
+    const handleLoadAlbums = async (artistId: number) => {
+        try {
+            const resp = await fetch(`/api/artists/${artistId}/albums`, { credentials: 'include' })
+            if (!resp.ok) {
+                setAlbumsError(`Failed: ${resp.status}`)
+                return
+            }
+            const data = await resp.json() as { albums: { id: number, title: string, year: number }[] }
+            setAlbums(data.albums)
+        } catch (err) {
+            console.error(err)
+            setAlbumsError('Network error')
+        }
+    }
 
   return (
     <>
@@ -145,6 +161,31 @@ function App() {
           <li key={artist.id}>{artist.name}</li>
         ))}
       </ul>
+      <h2> Albums </h2>
+      <input
+        type="number"
+        placeholder="Artist ID"
+        value={selectedArtistId ?? ''}
+        onChange={(e) => setSelectedArtistId(e.target.value ? Number(e.target.value) : null)}
+      />
+      <button
+        onClick={() => {
+          const id = Number(selectedArtistId)
+          if (!Number.isNaN(id) && id > 0) {
+            handleLoadAlbums(id)
+          } else {
+            setAlbumsError('Please enter a valid artist ID')
+          }
+        }}
+        >
+        Load albums for artist
+      </button>
+        {albumsError && <p style={{ color: 'red' }}>{albumsError}</p>}
+        <ul>
+        {albums.map((album) => (
+            <li key={album.id}>{album.title} ({album.year})</li>
+        ))}
+        </ul>
     </>
   )
 }
