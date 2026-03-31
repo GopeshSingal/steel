@@ -2,3 +2,4 @@
 backend/go.sum
 backend/data/
 web/node_modules
+music/
