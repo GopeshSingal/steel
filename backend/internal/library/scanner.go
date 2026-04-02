@@ -30,7 +30,7 @@ func (s *Scanner) Scan(ctx context.Context) (ScanResult, error) {
 	res := ScanResult{}
 
 	allowedExt := map[string]bool{
-		".mp3": true, ".flac": true,
+		".mp3": true, ".flac": true, ".m4p": true, ".mp4": true,
 	}
 
 	err := filepath.WalkDir(s.musicDir, func(path string, d os.DirEntry, err error) error {
