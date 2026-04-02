@@ -16,7 +16,7 @@ function App() {
     const [albumTracksError, setAlbumTracksError] = useState<string | null>(null)
     const [selectedArtistId, setSelectedArtistId] = useState<number | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
-    const [searchResults, setSearchResults] = useState<{ id: number; title: string }[]>([])
+    const [searchResults, setSearchResults] = useState<{ id: number; title: string; artist?: string; album?: string }[]>([])
     const [searchError, setSearchError] = useState<string | null>(null)
     const [currentStreamTrackId, setCurrentStreamTrackId] = useState<number | null>(null)
 
@@ -206,7 +206,7 @@ function App() {
                 setSearchError(`Search failed: ${response.status}`)
                 return
             }
-            const data = await response.json() as { tracks: { id: number, title: string }[] }
+            const data = await response.json() as { tracks: { id: number, title: string, artist?: string, album?: string }[] }
             if (data.tracks.length === 0) {
                 setSearchResults([])
                 setSearchError('Nothing found')
@@ -324,7 +324,7 @@ function App() {
                 <ul>
                     {searchResults.map((track) => (
                         <li key={track.id}>
-                            {track.id} | {track.title}
+                            {track.id} | {track.artist ? `${track.artist} - ` : ''}{track.title}{track.album ? ` (${track.album})` : ''}
                             <button onClick={() => setCurrentStreamTrackId(track.id)} style={{ marginLeft: '10px', fontSize: '0.8em', padding: '2px 8px' }}>Play</button>
                         </li>
                     ))}
