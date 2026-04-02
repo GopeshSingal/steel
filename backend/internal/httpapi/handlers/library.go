@@ -153,14 +153,28 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	like := "%" + q + "%"
-	rows, err := h.db.QueryContext(r.Context(), `
-SELECT t.id, t.title
+	words := strings.Fields(q)
+	var conditions []string
+	var args []any
+
+	for _, w := range words {
+		conditions = append(conditions, "(t.title LIKE ? OR al.title LIKE ? OR ar.name LIKE ?)")
+		like := "%" + w + "%"
+		args = append(args, like, like, like)
+	}
+	args = append(args, limit)
+
+	query := `
+SELECT t.id, t.title, ar.name, al.title
 FROM tracks t
-WHERE t.title LIKE ?
-ORDER BY t.title ASC
+JOIN albums al ON t.album_id = al.id
+JOIN artists ar ON al.artist_id = ar.id
+WHERE ` + strings.Join(conditions, " AND ") + `
+ORDER BY ar.name ASC, al.title ASC, t.title ASC
 LIMIT ?
-`, like, limit)
+`
+
+	rows, err := h.db.QueryContext(r.Context(), query, args...)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
 		return
@@ -168,13 +182,15 @@ LIMIT ?
 	defer rows.Close()
 
 	type Track struct {
-		ID    int64  `json:"id"`
-		Title string `json:"title"`
+		ID     int64  `json:"id"`
+		Title  string `json:"title"`
+		Artist string `json:"artist"`
+		Album  string `json:"album"`
 	}
-	var out []Track
+	out := []Track{}
 	for rows.Next() {
 		var t Track
-		if err := rows.Scan(&t.ID, &t.Title); err != nil {
+		if err := rows.Scan(&t.ID, &t.Title, &t.Artist, &t.Album); err != nil {
 			continue
 		}
 		out = append(out, t)
